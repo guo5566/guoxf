@@ -1,0 +1,104 @@
+{template 'common/header'}
+<style>
+	.popover{width:400px;max-width:400px;}
+</style>
+<ul class="nav nav-tabs">
+	<li><a href="{php echo url('mc/mass')}"> 微信群发</a></li>
+	<li class="active"><a href="{php echo url('mc/mass/send')}"> 已发送</a></li>
+</ul>
+
+<div class="clearfix">
+	<form action="?{$_SERVER['QUERY_STRING']}" method="post" id="form1">
+		<div class="panel panel-default">
+			<div class="panel-body table-responsive">
+				<table class="table table-hover" cellspacing="0" cellpadding="0">
+					<thead class="navbar-inner">
+					<tr>
+						<th>消息详情</th>
+						<th>发送用户组</th>
+						<th>发送人数</th>
+						<th>发送时间</th>
+					</tr>
+					</thead>
+					<tbody>
+						{loop $list $li}
+							<tr>
+								<td>
+									{if $li['msgtype'] == 'text'}
+										<a href="javascript:;" class="send">{$types[$li['msgtype']]}</a>
+										<div class="content" style="display: none">
+											{$li['content']}
+										</div>
+									{elseif $li['msgtype'] == 'image'}
+										<a href="javascript:;" class="send">{$types[$li['msgtype']]}</a>
+										<div class="content" style="display: none">
+											<img src="{php echo tomedia($li['content']);}" class="img-rounded" width="100%">
+										</div>
+									{elseif $li['msgtype'] == 'voice' ||  $li['msgtype'] == 'video'}
+										<a href="{php echo tomedia($li['content'])}" target="_blank" title="点击查看详情" data-toggle="tooltip" data-placement="bottom" class="tip">{$types[$li['msgtype']]}</a>
+									{elseif $li['msgtype'] == 'news'}
+										{if $li['rid'] > 0}
+											<a href="{php echo url('platform/reply/post', array('m'=> 'news', 'rid' => $li['rid']));}" target="_blank" data-toggle="tooltip" data-placement="bottom" title="点击查看图文详情" class="tip">{$types[$li['msgtype']]}</a>
+										{else}
+											<a href="javascript:;" class="send">{$types[$li['msgtype']]}</a>
+											<div class="content" style="display: none;">
+												<div class="reply" style="width:100%">
+													<div class="panel-group">
+														{loop $li['content'] $k $con}
+														<div class="panel panel-default">
+															{if !$k}
+															<div class="panel-body">
+																<div class="img">
+																	<i class="default">封面图片</i>
+																	<img src="{php echo media2local($con['thumb_media_id'])}">
+																	<span class="text-left">{$con['title']}</span>
+																</div>
+															</div>
+															{else}
+															<div class="panel-body">
+																<div class="text">
+																	<h4>{$con['title']}</h4>
+																</div>
+																<div class="img">
+																	<img src="{php echo media2local($con['thumb_media_id'])}">
+																	<i class="default">缩略图</i>
+																</div>
+															</div>
+															{/if}
+														</div>
+														{/loop}
+													</div>
+												</div>
+											</div>
+										{/if}
+									{/if}
+								</td>
+								<td>{$li['groupname']}</td>
+								<td>{if $li['groupname'] == '全部用户'}NAN{else}{$li['fansnum']}{/if}</td>
+								<td>{php echo date('Y-m-d H:i:s', $li['createtime']);}</td>
+							</tr>
+						{/loop}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</form>
+</div>
+<script>
+	require(['bootstrap'], function(){
+		$('.send').hover(function(){
+			$('.send').popover('hide');
+			$(this).popover({
+				html:true,
+				placement:'right',
+				trigger:'manual',
+				content:$(this).next('.content').html()
+			});
+			$(this).popover('toggle');
+		});
+		$('.tip').hover(function(){
+			$(this).tooltip();
+		});
+	});
+</script>
+{template 'common/footer'}
